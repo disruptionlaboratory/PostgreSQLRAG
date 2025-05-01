@@ -1,0 +1,44 @@
+services:
+
+  embeddings:
+    container_name: postgresql_rag_embeddings
+    build:
+      context: ./embeddings
+      dockerfile: Dockerfile.development
+    ports:
+      - "7272:7272"
+    networks:
+      - my-network
+
+  api:
+    container_name: postgresql_rag_api
+    build:
+      context: ./api
+      dockerfile: Dockerfile.development
+    command: npm run start
+    volumes:
+      - ./api/:/app
+    ports:
+      - "8282:8282"
+    depends_on:
+      - db
+    networks:
+      - my-network
+
+  db:
+    image: ankane/pgvector
+    container_name: postgresql_rag_db
+    ports:
+      - 5432:5432
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgresql_rag
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    driver: bridge

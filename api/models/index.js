@@ -1,4 +1,5 @@
 const { Sequelize } = require("sequelize");
+const pgvector = require("pgvector/sequelize");
 const dotenv = require("dotenv");
 
 dotenv.config("./../.env");
@@ -17,6 +18,8 @@ const sequelize = new Sequelize(
     },
   },
 );
+
+// pgvector.registerType(sequelize);
 
 const db = {
   sequelize: sequelize,

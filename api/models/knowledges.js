@@ -14,8 +14,7 @@ module.exports = (sequelize) => {
         allowNull: false,
       },
       embedding: {
-        // type: DataTypes.BLOB, // Use BLOB with a size (768 bytes here, adjust as needed)
-        type: DataTypes.JSON,
+        type: DataTypes.TSVECTOR,
         allowNull: false,
       },
     },

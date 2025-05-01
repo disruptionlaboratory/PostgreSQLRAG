@@ -36,41 +36,51 @@ app.get("/api/ping", (req, res) => {
   });
 });
 
-app.get("/api/embeddings", async (req, res) => {
+app.post("/api/search", async (req, res) => {
   try {
-    const sentence = "The green shoots of recovery can be seen";
-
+    const { search } = req.body;
     const response = await post(
       "http://postgresql_rag_embeddings:7272/api/generate-embedding",
       {
-        sentence: sentence,
+        sentence: search,
       },
     );
-    // console.log(response.data.embedding);
-
-    // res.json({ message: JSON.stringify(response.data.embedding) });
-
-    // const data = JSON.parse(response.data);
-    // console.log(data.embedding);
-
-    // console.log(`length: ${response.data.embedding[0].length}`);
-
-    // const embeddings = "[" + response.data.embedding[0].join(", ") + "]";
-    // const embeddings = [ response.data.embedding[0].join(", ") + "]";
     const embeddings = response.data.embedding[0];
+    // We now want to perform similarity search...
+    const results = await db.sequelize.query(
+      `SELECT id,
+              description,
+              1 - (embedding <=> ARRAY[${embeddings.join(", ")}]::vector(768)) AS similarity
+       FROM knowledge
+       WHERE (1 - (embedding <=> ARRAY[${embeddings.join(", ")}]::vector(768))) > 0.5
+       ORDER BY similarity DESC
+         LIMIT 3`,
+    );
+    res.json(results[0]);
+  } catch (e) {
+    console.log(JSON.stringify(e));
+    res.json({ message: "Oops", details: JSON.stringify(e) });
+  }
+});
 
-    // let embeddings = []
-
-    // console.log(embeddings);
-
-    res.json(embeddings);
-
-    // const k = await db.knowledge.create({
-    //   description: sentence,
-    //   embedding: embeddings,
-    // });
-
-    // res.json(k.toJSON());
+app.post("/api/knowledge", async (req, res) => {
+  try {
+    const { description } = req.body;
+    const response = await post(
+      "http://postgresql_rag_embeddings:7272/api/generate-embedding",
+      {
+        sentence: description,
+      },
+    );
+    const embeddings = response.data.embedding[0];
+    const k = await db.knowledge.create(
+      {
+        description,
+        embedding: `[${embeddings.join(", ")}]`,
+      },
+      { raw: true },
+    );
+    res.json(k.toJSON());
   } catch (e) {
     console.log(JSON.stringify(e));
     res.json({ message: "Oops", details: JSON.stringify(e) });

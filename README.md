@@ -58,6 +58,22 @@ List tables
 ```
 
 
+### Articles
+
+/articles
+
+Okay, this page is the finished, polished version, as it were.
+
+- Upload article which is persisted in articles table
+- Article is split into sentences using compromise.js and then turned into embedding vector using HuggingFace Sentence model via RESTful API
+- Embeddings are persisted into articles_embeddings table, linking back to article
+- Search is turned into embedding vector and returns matching articles via articles_embeddings similarity and threshold (debugging tool)
+- Prompt works similarly to search but inserts the matching articles into the context for the prompt before sending it off to LLM and returning results
+
+Next steps
+
+- In a separate project / repo, build the AI chatbot as a SaaS product using learnings from this spike
+
 
 
 ### Example generating content for knowledge table
@@ -106,11 +122,11 @@ LIMIT
 
 ## TODO
 
-- Insert embeddings via Express API
-- Perform similarity search via Express API
-- Generate more embeddings and test, test, test
-- Given lots of text, split it up into "sentences" and get embeddings and do inserts
-- Revisit and optimise the "batch" sentences, including embeddings API
-- Create Chatbot on landing page
-- Plumb in support for RAG by generating embedding of prompt and sending it all to LLM
-- Spike more real-life scenarios like T&Cs, Regulations etc and restrict similarity by keywords or tags (re-modelling req'd)
+- ~~Insert embeddings via Express API~~
+- ~~Perform similarity search via Express API~~
+- ~~Generate more embeddings and test, test, test~~
+- ~~Given lots of text, split it up into "sentences" and get embeddings and do inserts~~
+- ~~Revisit and optimise the "batch" sentences, including embeddings API~~
+- ~~Create Chatbot on landing page~~
+- ~~Plumb in support for RAG by generating embedding of prompt and sending it all to LLM~~
+- ~~Spike more real-life scenarios like T&Cs, Regulations etc and restrict similarity by keywords or tags (re-modelling req'd)~~

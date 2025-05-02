@@ -23,6 +23,8 @@ const sequelize = new Sequelize(
 
 const db = {
   sequelize: sequelize,
+  articles: require("./articles")(sequelize),
+  articles_embeddings: require("./articles_embeddings")(sequelize),
   knowledge: require("./knowledges")(sequelize),
 };
 

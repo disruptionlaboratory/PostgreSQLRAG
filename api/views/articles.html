@@ -1,0 +1,303 @@
+<div class="container">
+    <div class="row">
+        <div class="column">
+            <h1>Experimental</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="column">
+            <div class="section">
+                <h3>Adding article</h3>
+                <form method="post">
+                    <div class="field">
+                        <label for="content">Content</label>
+                        <textarea id="content" name="content"></textarea>
+                    </div>
+                    <div class="actions">
+                        <button type="reset">Reset</button>
+                        <button id="articleSubmitButton" type="submit">
+                            Submit
+                        </button>
+                    </div>
+                </form>
+                <div class="result" id="articleAddedResult"></div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="column">
+            <h3>Performing a similarity search with the article_embeddings table</h3>
+            <form method="post">
+                <div class="field">
+                    <label for="search">Search</label>
+                    <input id="search" type="text" value="" name="search" />
+                </div>
+                <div class="field">
+                    <label for="threshold">Threshold</label>
+                    <select id="threshold" name="threshold">
+                        <option>0.0</option>
+                        <option>0.1</option>
+                        <option>0.2</option>
+                        <option>0.3</option>
+                        <option>0.4</option>
+                        <option selected>0.5</option>
+                        <option>0.6</option>
+                        <option>0.7</option>
+                        <option>0.8</option>
+                        <option>0.9</option>
+                        <option>1.0</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="limit">Limit</label>
+                    <select id="limit" name="limit">
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option selected>5</option>
+                        <option>6</option>
+                        <option>7</option>
+                        <option>8</option>
+                        <option>9</option>
+                        <option>10</option>
+                    </select>
+                </div>
+                <div class="actions">
+                    <button type="reset">Reset</button>
+                    <button id="searchButton" type="submit">Submit</button>
+                </div>
+            </form>
+            <table>
+                <thead>
+                <tr>
+                    <th class="key">ID</th>
+                    <th class="articleKey">Article ID</th>
+                    <th>Description</th>
+                    <th>Similarity</th>
+                    <th class="embedding">Embedding</th>
+                </tr>
+                </thead>
+                <tbody id="tableBody">
+                <tr>
+                    <td colspan="4"><p>Nope, not yet!</p></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="column">
+            <h3>Prompt</h3>
+            <form method="post">
+                <div class="field">
+                    <label for="model">Model</label>
+                    <select id="model" name="model">
+                        <option selected>gemma3:12b</option>
+                        <!--                  <option>gemma3:12b</option>-->
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="systemPrompt">System Prompt</label>
+                    <textarea id="systemPrompt" name="systemPrompt"></textarea>
+                </div>
+                <div class="field">
+                    <label for="prompt">Prompt</label>
+                    <input id="prompt" type="text" value="" name="prompt" />
+                </div>
+                <div class="field">
+                    <label for="promptThreshold">Threshold</label>
+                    <select id="promptThreshold" name="promptThreshold">
+                        <option>0.0</option>
+                        <option>0.1</option>
+                        <option>0.2</option>
+                        <option>0.3</option>
+                        <option>0.4</option>
+                        <option selected>0.5</option>
+                        <option>0.6</option>
+                        <option>0.7</option>
+                        <option>0.8</option>
+                        <option>0.9</option>
+                        <option>1.0</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="promptLimit">Limit</label>
+                    <select id="promptLimit" name="promptLimit">
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option selected>5</option>
+                        <option>6</option>
+                        <option>7</option>
+                        <option>8</option>
+                        <option>9</option>
+                        <option>10</option>
+                    </select>
+                </div>
+                <div class="actions">
+                    <button type="reset">Reset</button>
+                    <button id="promptButton" type="submit">Submit</button>
+                </div>
+            </form>
+            <div class="row badges">
+                <div class="badge">Duration: <span id="duration">0</span></div>
+                <div class="badge">Input tokens: <span id="inputTokens">0</span></div>
+                <div class="badge">Output tokens: <span id="outputTokens">0</span></div>
+                <div class="badge">USD: <span id="cost">0</span></div>
+            </div>
+            <div class="result" id="promptResult"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document
+        .getElementById("articleSubmitButton")
+        .addEventListener("click", (e) => {
+            e.preventDefault();
+
+            const content = document.getElementById("content").value;
+            console.log(content);
+
+            fetch("/api/articles", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    content: content,
+                }),
+            })
+                .then((response) => {
+                    if (!response.ok) {
+                        // Modern error checking
+                        throw new Error(response.status);
+                    }
+                    return response.json(); // Parse the JSON response
+                })
+                .then((responseData) => {
+                    console.log(responseData);
+                    document.getElementById("articleAddedResult").innerHTML = JSON.stringify(responseData);
+                });
+        });
+    //
+    document.getElementById("promptButton").addEventListener("click", (e) => {
+        e.preventDefault();
+
+        const model = document.getElementById("model").value;
+        const threshold = document.getElementById("promptThreshold").value;
+        const limit = document.getElementById("promptLimit").value;
+        const systemPrompt = document.getElementById("systemPrompt").value;
+        const prompt = document.getElementById("prompt").value;
+
+        fetch("/api/articles/infer", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                systemPrompt: systemPrompt,
+                prompt: prompt,
+                threshold: threshold,
+                limit: limit,
+                model: model,
+            }),
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    // Modern error checking
+                    throw new Error(response.status);
+                }
+                return response.json(); // Parse the JSON response
+            })
+            .then((responseData) => {
+                console.log(responseData);
+
+                document.getElementById("duration").innerHTML =
+                    responseData.data.duration;
+
+                document.getElementById("inputTokens").innerHTML =
+                    responseData.data.input_tokens;
+                document.getElementById("outputTokens").innerHTML =
+                    responseData.data.output_tokens;
+
+                document.getElementById("cost").innerHTML = responseData.data.cost;
+
+                document.getElementById("promptResult").innerHTML =
+                    responseData.data.response;
+            });
+    });
+
+    document.getElementById("searchButton").addEventListener("click", (e) => {
+        e.preventDefault();
+
+        const search = document.getElementById("search").value;
+        const threshold = document.getElementById("threshold").value;
+        const limit = document.getElementById("limit").value;
+
+        fetch("/api/articles/search", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                search: search,
+                threshold: threshold,
+                limit: limit,
+            }),
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    // Modern error checking
+                    throw new Error(response.status);
+                }
+                return response.json(); // Parse the JSON response
+            })
+            .then((responseData) => {
+                // tableBody
+                const tableBody = document.getElementById("tableBody");
+                tableBody.innerHTML = "";
+
+                if (responseData.length > 0) {
+                    responseData.forEach((row) => {
+                        const rowElement = document.createElement("tr");
+                        const tdElementOne = document.createElement("td");
+                        tdElementOne.className = "key";
+                        tdElementOne.innerHTML = row.id;
+
+                        const tdElementArticleKey = document.createElement("td");
+                        tdElementArticleKey.innerHTML = row.articles_id;
+                        tdElementArticleKey.className = "articleKey";
+
+                        const tdElementTwo = document.createElement("td");
+                        tdElementTwo.innerHTML = row.sentence;
+
+                        const tdElementThree = document.createElement("td");
+                        tdElementThree.innerHTML = row.similarity;
+                        const tdElementFour = document.createElement("td");
+                        tdElementFour.className = "embedding";
+                        tdElementFour.innerHTML = row.embedding;
+                        rowElement.appendChild(tdElementOne);
+                        rowElement.appendChild(tdElementArticleKey);
+                        rowElement.appendChild(tdElementTwo);
+                        rowElement.appendChild(tdElementThree);
+                        rowElement.appendChild(tdElementFour);
+                        tableBody.appendChild(rowElement);
+                    });
+                } else {
+                    const rowElement = document.createElement("tr");
+                    const tdElementOne = document.createElement("td");
+                    tdElementOne.colSpan = 4;
+                    tdElementOne.innerHTML = "<p>Nope, nothing</p>";
+                    tableBody.appendChild(rowElement);
+                }
+                console.log(responseData);
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    });
+</script>
